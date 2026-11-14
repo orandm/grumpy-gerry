@@ -2,7 +2,7 @@ import os
 import tempfile
 import threading
 import unittest
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 from giftlist import accounts, activity, badges, claims, clock, gerry, lists
@@ -597,6 +597,17 @@ class TestActivitySharedGiftReveal(World):
         scarf = lists.add_item(self.repo, self.maire, self.p_maire.id, "Scarf", None, None, 2000, None, False)
         accounts.set_reveal(self.repo, self.nora, self.p_maire.id, True)
         self.assertTrue(any(a.params.get("item") == "Scarf" for a in activity.feed(self.repo, self.nora)))
+
+
+class TestActivityFeedWindow(World):
+    def test_feed_drops_activity_older_than_window(self):
+        old = clock.now() - activity.FEED_WINDOW - timedelta(days=1)
+        with patch("giftlist.clock.now", return_value=old):
+            lists.add_item(self.repo, self.maire, self.p_maire.id, "Old scarf", None, None, 2000, None, False)
+        lists.add_item(self.repo, self.maire, self.p_maire.id, "New scarf", None, None, 2000, None, False)
+        items = {a.params.get("item") for a in activity.feed(self.repo, self.aoife)}
+        self.assertIn("New scarf", items)
+        self.assertNotIn("Old scarf", items)
 
 
 class TestActivityReplies(World):

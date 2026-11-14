@@ -50,12 +50,19 @@ def _visible(mine: int, revealed: set[int], a: Activity) -> bool:
     return set(co_owners) <= revealed
 
 
+# How far back the activity page reaches. Older news isn't news.
+FEED_WINDOW = timedelta(days=14)
+
+
 def feed(repo: Repository, user: User, limit: int = 60) -> list[Activity]:
-    """Most recent activity this user is allowed to see."""
+    """Most recent activity this user is allowed to see, within FEED_WINDOW."""
     mine = access.household_id_of(repo, user)
     revealed = repo.revealed_person_ids(user.id)
+    cutoff = clock.now() - FEED_WINDOW
     out = []
     for a in repo.recent_activity(limit * 4):  # over-fetch to allow for filtering
+        if a.created_at < cutoff:
+            break  # newest first, so everything after this is older still
         if _visible(mine, revealed, a):
             out.append(a)
             if len(out) >= limit:
