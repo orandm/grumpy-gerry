@@ -84,6 +84,21 @@ def _editable_item(repo: Repository, user: User, item_id: int) -> tuple[Item, Pe
     return item, repo.person(item.person_id)
 
 
+def admin_set_link(repo: Repository, item_id: int, url: str | None) -> Item:
+    """Admin-only (the route checks): fix a broken or wrong link on anyone's
+    item. Touches nothing else, and logs no activity -- a link tidy-up isn't news."""
+    with repo.write():
+        item = repo.item(item_id)
+        if item is None:
+            raise NotFound("That item's already gone.")
+        new_url = _url(url)
+        if (url or "").strip() and new_url is None:
+            raise DomainError("That's not a link.")
+        repo.update_item(item.id, item.title, new_url, item.image, item.price_minor, item.note,
+                         item.really_want, item.is_voucher)
+        return repo.item(item_id)
+
+
 def edit_item(repo: Repository, user: User, item_id: int, title: str, url: str | None, image: str | None,
               price_minor: int, note: str | None, really_want: bool, is_voucher: bool = False) -> Item:
     """Price may drop below what's claimed: blocking it would reveal claims.

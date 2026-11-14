@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import hdr, item_card %}
+{% from "_macros.html" import hdr, item_card with context %}
 {% block header %}
 {% set countdown_days, countdown_line, countdown_sprite = gerry_countdown() %}
 {% call hdr("The Nice List", "Christmas " ~ season_year ~ ". Snoop on everyone's list except your own.") %}

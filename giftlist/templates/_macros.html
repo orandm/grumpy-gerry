@@ -71,6 +71,14 @@
   <button class="btn btn-block">{% if v.claimed_minor %}Cover the last {{ v.remaining_minor|money }}, hero{% else %}I'll get this{% endif %}</button></form>
   <a class="link" href="{{ url_for('pages.buy', item_id=it.id, next=here) }}">{% if v.claimed_minor %}Just chip in a bit{% else %}Not paying full price for that{% endif %}</a>
 {% endif %}
+{% if is_admin %}
+<details class="admin-link"><summary class="link">Fix link (admin)</summary>
+<form method="post" action="{{ url_for('admin.set_item_link', item_id=it.id) }}" class="row">{{ csrf() }}
+<input type="hidden" name="next" value="{{ here }}">
+<input type="url" name="url" inputmode="url" value="{{ it.url or '' }}" placeholder="https://" aria-label="Link for {{ it.title }}">
+<button class="btn btn-outline" style="flex: 0">Save</button></form>
+</details>
+{% endif %}
 </div>
 </article>
 {%- endmacro %}

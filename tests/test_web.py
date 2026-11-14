@@ -147,6 +147,30 @@ class WebTests(unittest.TestCase):
         r = mam.text(f"/items/{coat}/buy")  # can't open your own item's buy page
         self.assertNotIn("Chip in", r)
 
+    def test_admin_can_fix_the_link_on_someone_elses_item(self):
+        mam = Browser(self.app)
+        mam.sign_in("mam@x.ie", self.invite)
+        self.add_item(mam, "Wool coat", "80")
+        coat = self.item_id(self.boss, "Wool coat")
+        self.assertIn("Fix link (admin)", self.boss.text("/"))
+
+        r = self.boss.post(f"/admin/items/{coat}/link", {"url": "shop.example.com/coat"})
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("https://shop.example.com/coat", self.boss.text("/"))
+        edit = mam.text(f"/items/{coat}/edit")
+        self.assertIn("https://shop.example.com/coat", edit)
+        self.assertIn('value="Wool coat"', edit)  # nothing else touched
+
+    def test_non_admin_cannot_fix_links(self):
+        mam = Browser(self.app)
+        mam.sign_in("mam@x.ie", self.invite)
+        self.add_item(self.boss, "Slippers", "20")
+        slippers = self.item_id(mam, "Slippers")
+        self.assertNotIn("Fix link (admin)", mam.text("/"))
+        r = mam.post(f"/admin/items/{slippers}/link", {"url": "https://evil.example.com"})
+        self.assertEqual(r.status_code, 404)
+        self.assertNotIn("evil.example.com", mam.text("/"))
+
     def test_last_claimer_backing_out_after_bought_reopens_the_item(self):
         mam = Browser(self.app)
         mam.sign_in("mam@x.ie", self.invite)

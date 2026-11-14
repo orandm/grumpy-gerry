@@ -93,6 +93,10 @@ p { margin: 0; }
   border: 0; background: none; color: var(--green); font: 700 17px/1.2 var(--body); text-decoration: underline; cursor: pointer;
 }
 .link.danger { color: #8E1428; }
+.admin-link { margin-top: 8px; }
+.admin-link > summary { cursor: pointer; list-style: none; }
+.admin-link > summary::-webkit-details-marker { display: none; }
+.admin-link form { margin-top: 6px; }
 form.inline { display: inline; }
 
 /* --- people and items ------------------------------------------------------ */

@@ -499,6 +499,29 @@ class TestEveryoneSharedGrouping(World):
         self.assertEqual(maire_view.still_needed, 1)  # the scarf, not the shared coat
 
 
+class TestAdminSetLink(World):
+    def test_changes_only_the_link(self):
+        item = lists.add_item(self.repo, self.maire, self.p_maire.id, "Scarf", "https://old.example.com", None,
+                              2000, "blue", True)
+        lists.admin_set_link(self.repo, item.id, "new.example.com/scarf")
+        after = self.repo.item(item.id)
+        self.assertEqual(after.url, "https://new.example.com/scarf")
+        self.assertEqual((after.title, after.price_minor, after.note, after.really_want), ("Scarf", 2000, "blue", True))
+
+    def test_blank_removes_the_link(self):
+        item = lists.add_item(self.repo, self.maire, self.p_maire.id, "Scarf", "https://old.example.com", None,
+                              2000, None, False)
+        lists.admin_set_link(self.repo, item.id, "  ")
+        self.assertIsNone(self.repo.item(item.id).url)
+
+    def test_rejects_junk(self):
+        item = lists.add_item(self.repo, self.maire, self.p_maire.id, "Scarf", "https://old.example.com", None,
+                              2000, None, False)
+        with self.assertRaises(DomainError):
+            lists.admin_set_link(self.repo, item.id, "not a link")
+        self.assertEqual(self.repo.item(item.id).url, "https://old.example.com")
+
+
 class TestVouchers(World):
     def test_contributions_are_not_capped_at_the_price(self):
         voucher = lists.add_item(self.repo, self.maire, self.p_maire.id, "Spa day", None, None, 5000, None, False, True)

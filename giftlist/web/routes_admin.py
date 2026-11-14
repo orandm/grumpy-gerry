@@ -6,9 +6,9 @@ import os
 
 from flask import Blueprint, flash, redirect, request, url_for
 
-from .. import accounts, email_digest, mail
+from .. import accounts, email_digest, lists, mail
 from ..errors import DomainError
-from .support import admin_required, cfg, current_user, login_required, render, repo
+from .support import admin_required, cfg, current_user, login_required, next_url, render, repo
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -43,6 +43,19 @@ def rename_household(household_id: int):
     except DomainError as e:
         flash(str(e), "error")
     return redirect(url_for("admin.overview"))
+
+
+@bp.post("/items/<int:item_id>/link")
+@login_required
+@admin_required
+def set_item_link(item_id: int):
+    back = next_url(url_for("pages.everyone") + f"#item-{item_id}")
+    try:
+        lists.admin_set_link(repo(), item_id, request.form.get("url", ""))
+        flash("Link fixed.", "ok")
+    except DomainError as e:
+        flash(str(e), "error")
+    return redirect(back)
 
 
 @bp.post("/users/<int:user_id>/rename")
