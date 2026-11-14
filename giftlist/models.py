@@ -175,8 +175,15 @@ class PersonView:
         return self.items + self.shared_items
 
     @property
+    def only_shared(self) -> bool:
+        """Nothing of their own, just joint gifts -- the SharedGroupView entry
+        already covers them, so they get no separate (empty) entry."""
+        return not self.items and bool(self.shared_items)
+
+    @property
     def still_needed(self) -> int:
-        return sum(1 for v in self.all_items if v.remaining_minor > 0 and not v.item.is_bought)
+        """Of their own gifts only -- joint ones are counted on the joint entry."""
+        return sum(1 for v in self.items if v.remaining_minor > 0 and not v.item.is_bought)
 
 
 @dataclass(slots=True, frozen=True)

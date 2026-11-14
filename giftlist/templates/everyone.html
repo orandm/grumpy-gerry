@@ -30,12 +30,12 @@
 <section class="section">
 <h2 class="section-title">{{ hh.household.name }}</h2>
 <div class="card"><div class="cane"></div>
-{% for pv in hh.people %}
+{% for pv in hh.people if not pv.only_shared %}
 <details class="person">
 <summary><span>
 <span class="person-name">{{ pv.person.name }}</span>
-{% if not pv.all_items %}<span class="status">Hasn't bothered adding anything yet</span>
-{% elif pv.still_needed %}<span class="status">{{ pv.still_needed }} of {{ pv.all_items|length }} still up for grabs</span>
+{% if not pv.items %}<span class="status">Hasn't bothered adding anything yet</span>
+{% elif pv.still_needed %}<span class="status">{{ pv.still_needed }} of {{ pv.items|length }} still up for grabs</span>
 {% else %}<span class="status done">Sorted. You're off the hook.</span>{% endif %}
 </span></summary>
 {% if pv.items %}<div class="items">{% for v in pv.items %}{{ item_card(v, me, loop.index) }}{% endfor %}</div>{% endif %}

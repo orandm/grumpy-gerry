@@ -486,11 +486,17 @@ class TestEveryoneSharedGrouping(World):
         maire_view = next(pv for pv in hh.people if pv.person.id == self.p_maire.id)
         self.assertEqual([v.item.id for v in maire_view.items], [self.scarf.id])
 
-    def test_co_owners_status_counts_their_shared_gifts_too(self):
+    def test_co_owner_with_only_shared_gifts_gets_no_separate_entry(self):
         hh = self._household_view()
         sean_view = next(pv for pv in hh.people if pv.person.id == self.p_sean.id)
         self.assertEqual(sean_view.items, ())
-        self.assertEqual(sean_view.still_needed, 1)
+        self.assertTrue(sean_view.only_shared)
+
+    def test_person_status_counts_only_their_own_gifts(self):
+        hh = self._household_view()
+        maire_view = next(pv for pv in hh.people if pv.person.id == self.p_maire.id)
+        self.assertFalse(maire_view.only_shared)
+        self.assertEqual(maire_view.still_needed, 1)  # the scarf, not the shared coat
 
 
 class TestVouchers(World):
